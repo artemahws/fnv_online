@@ -1,5 +1,5 @@
 #!/bin/bash
-
+​
 read -s -p "Please enter the password for sudo: " PW
 SP="echo $PW"
 SS="sudo -S"
@@ -15,7 +15,7 @@ DOKNKEY="https://nvidia.github.io/nvidia-docker/gpgkey"
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 DOKNV="https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list"
 LOGFILE="install.log"
-
+​
 echo '### Step 1/* - Preinstall ###'
 $SP | $SS apt-get update -qqy && $SS apt-get dist-upgrade -qqy
 $SP | $SS apt install -qqy $PKGS
@@ -30,7 +30,6 @@ $SP | $SS apt-get update -qqy
 echo '### Step 6/* - Docker install ###'
 $SP | $SS apt-get install -qqy $DCKRPKGS
 echo '### Step 7/* - Docker privileges ###'
-# +
 $SP | $SS usermod -aG docker $USER 
 echo ' ### Step 8/* - Chmod for docker dir - ### Step 9/* - Docker-compose install ###'
 $SP | $SS curl -L $DCLINK -o $DCOUT
@@ -43,39 +42,40 @@ $SP | $SS curl -s -L $DOKNV | sudo tee /etc/apt/sources.list.d/nvidia-docker.lis
 $SP | $SS apt-get update
 $SP | $SS apt-get install -qqy nvidia-docker2
 $SP | $SS pkill -SIGHUP dockerd
-
 echo '### Step 11/* - Logfile ###'
 echo `date +%F_at_%H-%M-%S` > $LOGFILE 
 $SP | $SS lsb_release -d >> $LOGFILE
-$SP | $SS dmidecode -s system-product-name
+$SP | $SS dmidecode -s system-product-name >> $LOGFILE
 $SP | $SS lscpu | grep -i 'model name' >> $LOGFILE
 $SP | $SS dmidecode -t memory | grep -i 'installed size' | grep -v Not >> $LOGFILE
-$SP | $SS lscpu | grep Architecture >> $LOGFILE
 # $SP | $SS nvidia-smi -L >> $LOGFILE
 $SP | $SS docker -v >> $LOGFILE
 $SP | $SS docker-compose -v >> $LOGFILE
 $SP | $SS nvidia-docker -v >> $LOGFILE
-
 echo '### Step 12/* - FNV download ###'
 cd /home/$USER
 $SP | $SS curl -L -O $FNVLINK
 tar -xzf fnv_pkg.tar.gz
+echo '### Step 13/* - Docker-compose configuring ###'
 echo '''
-
-
-
-
-
-
+​
+​
+​
+​
+​
+​
     Start configure docker for FNV
     Please follow the installation instructions
-
-
-
-
-
-
+​
+​
+​
+​
+​
+​
 '''
-cd fnv_pkg/utils/
-# start scripting 
+cd /home/$USER/fnv_pkg/utils
 ./configure_docker.sh
+echo '### Step 14/* - FNV launching ###'
+cd /home/$USER/fnv_pkg/docker
+docker-compose up -d
+docker ps
